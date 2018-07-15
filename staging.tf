@@ -60,9 +60,58 @@ resource "aws_security_group" "ci_server_sg" {
 
 }
 
+data "aws_iam_policy_document" "ci_server_assume_role" {
+        statement {
+                principals {
+                        identifiers = [
+                                "ec2.amazonaws.com"
+                        ]
+                        type = "Service"
+                }
+
+                actions = [
+                        "sts:AssumeRole"
+                ]
+        }
+}
+
+data "aws_iam_policy_document" "ci_server_ipd" {
+        statement {
+                sid = "1"
+                resources = [
+                        "arn:aws:logs:*:*:*"
+                ]
+                actions = [
+                        "logs:CreateLogGroup",
+                        "logs:CreateLogStream",
+                        "logs:PutLogEvents",
+                        "logs:DescribeLogStreams"
+                ]
+                effect = "Allow"
+        }
+}
+
+resource "aws_iam_role" "ci_server_ir" {
+        name = "ci-server"
+        assume_role_policy = "${data.aws_iam_policy_document.ci_server_assume_role.json}"
+}
+
+resource "aws_iam_role_policy" "ci_server_rp" {
+        name = "ci-server"
+        role = "${aws_iam_role.ci_server_ir.name}"
+        policy = "${data.aws_iam_policy_document.ci_server_ipd.json}"
+}
+
+resource "aws_iam_instance_profile" "ci_server_iip" {
+	name = "ci-server"
+	role = "${aws_iam_role.ci_server_ir.name}"
+}
+
 resource "aws_instance" "ci_server" {
 	ami = "ami-ed838091"
 	instance_type = "t2.micro"
+
+	iam_instance_profile = "${aws_iam_instance_profile.ci_server_iip.name}"
 
 	tags {
 		Name = "ci-server"

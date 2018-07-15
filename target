@@ -1,0 +1,14 @@
+- region Singapore
+- VPC
+        - 1 Pulic Subnet: allows 256 private ips
+                - EC2 instance
+                        - Linux AMI v1
+                        - elastic IP
+                        - t2.micro
+                        - SG ports 443, 22 open for VPN IP
+                        - IAM policy to create log group & stream in cloudwatch
+- Output
+        - Instance IP
+        - SSH private key
+
+- Local backend

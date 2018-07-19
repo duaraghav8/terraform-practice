@@ -107,11 +107,17 @@ resource "aws_iam_instance_profile" "ci_server_iip" {
 	role = "${aws_iam_role.ci_server_ir.name}"
 }
 
+resource "aws_key_pair" "ci_server_key_pair" {
+	key_name = "ci-server"
+	public_key = "${var.ci_server_public_key}"
+}
+
 resource "aws_instance" "ci_server" {
 	ami = "ami-ed838091"
 	instance_type = "t2.micro"
 
 	iam_instance_profile = "${aws_iam_instance_profile.ci_server_iip.name}"
+	key_name = "${aws_key_pair.ci_server_key_pair.key_name}"
 
 	tags {
 		Name = "ci-server"
